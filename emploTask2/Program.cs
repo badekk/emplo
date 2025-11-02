@@ -1,5 +1,6 @@
 ﻿using emploTask2.Db;
 using emploTask2.Models;
+using emploTask2.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace emploTask2
@@ -15,7 +16,7 @@ namespace emploTask2
             using var context = new AppDbContext(options);
 
             SeedData(context);
-            Console.WriteLine("===========Zapytanie A============");
+            Console.WriteLine("===========Zapytanie 2A============");
 
             var zapytanieA = context.Employees
                 .Where(emp => emp.Team.Name == ".NET" &&
@@ -27,7 +28,7 @@ namespace emploTask2
             {
                 Console.WriteLine(emp);
             }
-            Console.WriteLine("===========Zapytanie B============");
+            Console.WriteLine("===========Zapytanie 2B============");
 
             var currentYear = DateTime.Now.Year;
             var today = DateTime.Now;
@@ -46,7 +47,7 @@ namespace emploTask2
                 Console.WriteLine(emp);
             }
 
-            Console.WriteLine("===========Zapytanie C============");
+            Console.WriteLine("===========Zapytanie 2C============");
 
             var zapytanieC = context.Teams
                 .Where(t => !t.Employees
@@ -58,6 +59,23 @@ namespace emploTask2
             {
                 Console.WriteLine(team);
             }
+
+            Console.WriteLine("===========Zadanie 3 / 4============");
+
+            var service = new VacationServices();
+
+            var jan = context.Employees.First(e => e.Name == "Jan Kowalski");
+            var lr9 = context.Employees.First(e => e.Name == "Julia Lewandowska");
+            var remainingDaysJan = service.CountFreeDaysForEmployee(jan, context.Vacations.ToList(), jan.VacationPackage);
+            var remainingDaysLewy = service.CountFreeDaysForEmployee(lr9, context.Vacations.ToList(), lr9.VacationPackage);
+            var canRequestHolidayJan = service.IfEmployeeCanRequestVacation(jan, context.Vacations.ToList(), jan.VacationPackage);
+            var canRequestHolidayLewy = service.IfEmployeeCanRequestVacation(lr9, context.Vacations.ToList(), lr9.VacationPackage);
+
+            Console.WriteLine($"Jan Kowalski has {remainingDaysJan} days of holiday to use.");
+            Console.WriteLine($"Can he request holiday? {(canRequestHolidayJan ? "Yes" : "Nope, nununu")}");
+            Console.WriteLine($"Julia Lewandowska has {remainingDaysLewy} days of holiday to use.");
+            Console.WriteLine($"Can she request holiday? {(canRequestHolidayLewy ? "Yes" : "Nope, nununu")}");
+
             Console.WriteLine("===========The End============");
         }
 
@@ -102,11 +120,11 @@ namespace emploTask2
                 new Vacation { Id = 15, Employee = employees[0], DateSince = new DateTime(2025, 10, 15), DateUntil = new DateTime(2025, 10, 22) },
                 new Vacation { Id = 16, Employee = employees[2], DateSince = new DateTime(2025, 12, 1), DateUntil = new DateTime(2025, 12, 5) },
                 new Vacation { Id = 17, Employee = employees[6], DateSince = new DateTime(2025, 11, 20), DateUntil = new DateTime(2025, 11, 27) },
-                new Vacation { Id = 18, Employee = employees[8], DateSince = new DateTime(2025, 12, 10), DateUntil = new DateTime(2025, 12, 15) },
+                new Vacation { Id = 18, Employee = employees[8], DateSince = new DateTime(2025, 12, 23), DateUntil = new DateTime(2025, 12, 25) },
                 new Vacation { Id = 19, Employee = employees[0], DateSince = new DateTime(2025, 11, 25), DateUntil = new DateTime(2025, 12, 2) }
             };
 
-            context.Teams.AddRange(teamDotNet, teamHr);
+            context.Teams.AddRange(teamDotNet, teamFrontend, teamHr);
             context.VacationPackages.Add(package);
             context.Employees.AddRange(employees);
             context.Vacations.AddRange(vacations);
