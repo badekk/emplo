@@ -5,3 +5,5 @@
 /.vs
 /emplo/.vs
 /emplo/obj
+/emplo/bin/Debug/net8.0
+/emplo/emplo.csproj
