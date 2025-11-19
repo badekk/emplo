@@ -16,11 +16,16 @@ namespace emploTask2
             using var context = new AppDbContext(options);
 
             SeedData(context);
+
             Console.WriteLine("===========Zapytanie 2A============");
+            var yearStart = new DateTime(2019, 01, 01);
+            var yearEnd = new DateTime(2019, 12, 31);
 
             var zapytanieA = context.Employees
                 .Where(emp => emp.Team.Name == ".NET" &&
-                    emp.Vacations.Any(v => v.DateSince.Year == 2019))
+                    emp.Vacations.Any(v => 
+                    v.DateSince <= yearEnd &&
+                    v.DateUntil >= yearStart))
                 .Select(x => x.Name)
                 .ToList();
 
@@ -28,20 +33,34 @@ namespace emploTask2
             {
                 Console.WriteLine(emp);
             }
+
             Console.WriteLine("===========Zapytanie 2B============");
 
             var currentYear = DateTime.Now.Year;
-            var today = DateTime.Now;
+            var startOfYear = new DateTime(currentYear, 1, 1);
+            var endOfYesterday = DateTime.Today.AddDays(-1);
 
             var zapytanieB = context.Employees
                 .Select(e => new
                 {
-                    EmployeeName = e.Name,
-                    UsedDays = e.Vacations
-                        .Where(v => v.DateSince.Year == currentYear && v.DateUntil < today)
-                        .Sum(v => (int)(v.DateUntil - v.DateSince).TotalDays + 1)
+                    e.Name,
+                    VacationsInYear = e.Vacations
+                        .Where(v => v.DateUntil >= startOfYear && v.DateSince <= endOfYesterday)
+                        .ToList()
+                })
+                .AsEnumerable()
+                .Select(e => new
+                {
+                    e.Name,
+                    UsedDays = e.VacationsInYear.Sum(v =>
+                    {
+                        var start = v.DateSince < startOfYear ? startOfYear : v.DateSince;
+                        var end = v.DateUntil > endOfYesterday ? endOfYesterday : v.DateUntil;
+                        return (end - start).Days + 1;
+                    })
                 })
                 .ToList();
+
             foreach (var emp in zapytanieB)
             {
                 Console.WriteLine(emp);
@@ -49,12 +68,16 @@ namespace emploTask2
 
             Console.WriteLine("===========Zapytanie 2C============");
 
+            var yearStartQueryC = new DateTime(2019, 1, 1);
+            var yearEndQueryC = new DateTime(2019, 12, 31);
+
             var zapytanieC = context.Teams
                 .Where(t => !t.Employees
                     .Any(e => e.Vacations
-                        .Any(v => v.DateSince.Year == 2019 || v.DateUntil.Year == 2019)))
+                        .Any(v => v.DateUntil >= yearStartQueryC && v.DateSince <= yearEndQueryC)))
                 .Select(t => new { t.Name })
                 .ToList();
+
             foreach (var team in zapytanieC)
             {
                 Console.WriteLine(team);
@@ -106,7 +129,7 @@ namespace emploTask2
                 new Vacation { Id = 1, Employee = employees[0], DateSince = new DateTime(2019, 5, 1), DateUntil = new DateTime(2019, 5, 5) },
                 new Vacation { Id = 2, Employee = employees[0], DateSince = new DateTime(2019, 7, 10), DateUntil = new DateTime(2019, 7, 12) },
                 new Vacation { Id = 3, Employee = employees[7], DateSince = new DateTime(2019, 8, 15), DateUntil = new DateTime(2019, 8, 20) },
-                new Vacation { Id = 4, Employee = employees[1], DateSince = new DateTime(2020, 6, 10), DateUntil = new DateTime(2020, 6, 15) },
+                new Vacation { Id = 4, Employee = employees[1], DateSince = new DateTime(2024, 6, 10), DateUntil = new DateTime(2026, 6, 15) },
                 new Vacation { Id = 5, Employee = employees[3], DateSince = new DateTime(2019, 12, 1), DateUntil = new DateTime(2019, 12, 5) },
                 new Vacation { Id = 6, Employee = employees[4], DateSince = new DateTime(2023, 7, 1), DateUntil = new DateTime(2023, 7, 14) },
                 new Vacation { Id = 7, Employee = employees[8], DateSince = new DateTime(2019, 9, 1), DateUntil = new DateTime(2019, 9, 5) },
